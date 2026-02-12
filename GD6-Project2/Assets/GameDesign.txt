@@ -1,0 +1,94 @@
+PROJECT SUMMARY (LOCKED)
+Title: “Deceiving Footprints — Penguin in the Fog”
+
+Core camera + movement model:
+- Camera is TILE-ANCHORED (not player-anchored).
+- Camera centers on the CURRENT TILE.
+- Penguin may move freely INSIDE the current tile following mouse position (cosmetic only).
+- When player commits to a neighbor tile:
+  - Penguin animates movement to that tile (exactly cyclesPerMovement walk cycles)
+  - If destination is a trap, penguin plays ouch animation and BOUNCES BACK to previous tile
+  - After movement completes (including bounce resolution), camera lerps to the resulting tile center
+  - Then movement unlocks again
+
+Game:
+- Unity 2D, camera zoomed in on current tile
+- Single-player, point & click
+- Flat-top hexagonal grid
+- Grid layout is HEX-RADIUS (a big hex made of smaller hexes)
+- Movement only to 6 neighbors
+- Player follows trails left by previous players (stored locally)
+- Fog is NOT a visibility system: it is a fully opaque overlay sprite attached to the penguin (snowstorm/swim-ring style) that covers most of the screen. The world still renders underneath.
+- Therefore: tiles and footprints are always rendered; “visibility” is purely what is covered by the fog overlay graphic.
+
+Tiles:
+- Safe tile: snow hex
+- Danger tile: snow hex with HOLE
+- Special tiles: Start and Finish
+
+Trails:
+- Real trails: automatically left when moving tile-to-tile (attempted move counts; actual tile-to-tile moves should be recorded; trap bounce should record the attempted move + bounce event clearly in data)
+- Fake trails: placed with RMB toward selected neighbor tile
+- Fake trails are LIMITED PER GAME SESSION (RUN), not per turn.
+  - Add public int maxFakeTrailsPerRun
+  - Track remainingFakeTrails
+  - Each RMB placement consumes 1
+  - When remainingFakeTrails == 0, RMB does nothing (optionally play a “deny” SFX hook)
+
+Controls:
+- Mouse hover = select neighbor tile
+- LMB = confirm move
+- RMB = place fake trail toward selected neighbor (consumes from remainingFakeTrails)
+- Penguin drifts locally inside current tile toward mouse (purely cosmetic)
+
+Player:
+- Penguin (not ghost)
+- 3 sprite variations + mirrored
+- Walk animation (2-frame loop)
+- Trap animation (“ouch”)
+
+Resolution:
+- 16:9 Full HD (1920x1080)
+
+Scoring (LOCKED):
+- STEP COUNT only
+- Traps currently do NOT affect score (may change later)
+
+Start screen:
+- Click anywhere to start (no button)
+- Minimal leaderboard top 3 (best = lowest steps):
+  penguin <random short id>, steps
+  penguin <random short id>, steps
+  penguin <random short id>, steps
+
+Gameplay UI (main scene):
+- Step counter display
+- Remaining fake trails display
+- “Give Up” button:
+  - Ends the run immediately
+  - Saves the run to local storage (same as any run)
+  - Returns to start screen (or restarts; choose one and be consistent)
+
+Movement timing (LOCKED):
+- Movement duration = animationCycleDuration * cyclesPerMovement
+- Default cyclesPerMovement = 2
+- Must expose public variables:
+  - animationCycleDuration (float)
+  - cyclesPerMovement (int)
+  - cameraMoveDuration (float)
+  - cameraZoom (float)
+
+Camera:
+- Centers on tile AFTER penguin finishes movement (and any bounce)
+- Zoom configurable via public variable
+
+Audio hooks (placeholders only):
+BG ambience; start; win; give up; step; fake trail; mouse click; trap hit; deny fake trail (optional)
+
+Local persistence:
+- JSON in Application.persistentDataPath
+- Save:
+  - run traces (real steps + fake markers + timestamps + end state: finished/gave up)
+  - leaderboard (top 3 by steps, random short penguin ids)
+- Render trails from ALL prior runs (finished or gave up)
+- Render up to N previous runs (default 5), exposed as public variable
