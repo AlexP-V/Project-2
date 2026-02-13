@@ -3,6 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
 [RequireComponent(typeof(SpriteRenderer))]
 public class PenguinController : MonoBehaviour
 {
@@ -14,6 +19,10 @@ public class PenguinController : MonoBehaviour
     [Header("Movement Timing")]
     public float animationCycleDuration = 0.25f; // seconds per cycle
     public int cyclesPerMovement = 2; // movement lasts animationCycleDuration * cyclesPerMovement
+
+    [Header("Camera")]
+    public float cameraMoveDuration = 0.3f;
+    public float cameraZoom = 5f;
 
     [Header("Animation")]
     public Animator animator; // expects bool "isWalking" and trigger "ouch" optionally
@@ -112,12 +121,7 @@ public class PenguinController : MonoBehaviour
         float duration = Mathf.Max(0.001f, animationCycleDuration * Mathf.Max(1, cyclesPerMovement));
         float t = 0f;
 
-        // face direction (flip sprite if needed)
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
-        {
-            sr.flipX = (end.x < start.x);
-        }
+        // (sprite flipping removed — handled by animations or separate system)
 
         while (t < duration)
         {
@@ -135,6 +139,13 @@ public class PenguinController : MonoBehaviour
 
         stepCount++;
         UpdateStepUI();
+
+        // Center camera on resulting tile, then unlock movement
+        var camCtrl = FindObjectOfType<CameraController>();
+        if (camCtrl != null)
+        {
+            yield return StartCoroutine(camCtrl.CenterOnAxialCoroutine(q, r, hexRadius, cameraMoveDuration, cameraZoom));
+        }
 
         isMoving = false;
     }
