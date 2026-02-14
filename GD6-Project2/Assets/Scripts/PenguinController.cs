@@ -3,11 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-
 [RequireComponent(typeof(SpriteRenderer))]
 public class PenguinController : MonoBehaviour
 {
@@ -15,6 +10,12 @@ public class PenguinController : MonoBehaviour
     public int q = 0;
     public int r = 0;
     public float hexRadius = 1f;
+    [Header("Field Bounds")]
+    [Tooltip("Maximum axial distance from center allowed (inclusive). Example: 1 -> center + its 6 neighbors.")]
+    public int fieldRadius = 3;
+    [Tooltip("Axial coordinates of field center (default 0,0)")]
+    public int fieldCenterQ = 0;
+    public int fieldCenterR = 0;
 
     [Header("Movement Timing")]
     public float animationCycleDuration = 0.25f; // seconds per cycle
@@ -83,6 +84,12 @@ public class PenguinController : MonoBehaviour
 
             if (IsNeighbor(tq, tr))
             {
+                if (!IsWithinField(tq, tr))
+                {
+                    // target outside allowed field — ignore input
+                    return;
+                }
+
                 StartCoroutine(MoveToTile(tq, tr));
             }
             else
@@ -109,6 +116,24 @@ public class PenguinController : MonoBehaviour
 
         int dist = (dx + dy + dz) / 2;
         return dist == 1;
+    }
+
+    private bool IsWithinField(int tq, int tr)
+    {
+        int x1 = fieldCenterQ;
+        int z1 = fieldCenterR;
+        int y1 = -x1 - z1;
+
+        int x2 = tq;
+        int z2 = tr;
+        int y2 = -x2 - z2;
+
+        int dx = Mathf.Abs(x1 - x2);
+        int dy = Mathf.Abs(y1 - y2);
+        int dz = Mathf.Abs(z1 - z2);
+
+        int dist = (dx + dy + dz) / 2;
+        return dist <= fieldRadius;
     }
 
     private IEnumerator MoveToTile(int tq, int tr)

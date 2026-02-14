@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1358353137970709411}
   - component: {fileID: 6271009288215095577}
-  - component: {fileID: -6092969888852582168}
+  - component: {fileID: 6890081863787683386}
   m_Layer: 0
   m_Name: Normal_Tile1_0
   m_TagString: Untagged
@@ -92,7 +92,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &-6092969888852582168
+--- !u!114 &6890081863787683386
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -101,9 +101,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7218122251488344504}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd5afbcb4a9d0428990a9e1c2967c3ba, type: 3}
+  m_Script: {fileID: 11500000, guid: 61873d7d5e1a649469b050651f9bc398, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TileSnap
-  hexRadius: 1
-  snapOnValidate: 1
-  preserveZ: 1
+  m_EditorClassIdentifier: Assembly-CSharp::HexTile
+  q: 0
+  r: 0
+  hexRadius: 1.62
+  highlightColor: {r: 0.8820755, g: 0.9737945, b: 1, a: 1}

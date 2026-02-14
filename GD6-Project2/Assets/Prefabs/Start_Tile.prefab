@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1365941310645185393}
   - component: {fileID: 9205248011355640811}
+  - component: {fileID: -5207102751721767015}
   m_Layer: 0
   m_Name: Start_Tile
   m_TagString: Untagged
@@ -82,7 +83,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 2436689576485346197, guid: e6d4683effe964a0e80a3802d5ef4044, type: 3}
-  m_Color: {r: 0.6063747, g: 0.6792453, b: 0.5606978, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -91,3 +92,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &-5207102751721767015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8003928952858731284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61873d7d5e1a649469b050651f9bc398, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HexTile
+  q: 0
+  r: 0
+  hexRadius: 1.62
+  highlightColor: {r: 0.8820755, g: 0.9737945, b: 1, a: 1}

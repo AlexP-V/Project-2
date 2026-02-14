@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4595776278899175643}
   - component: {fileID: 8656384113292100344}
+  - component: {fileID: 7743558157646146040}
   m_Layer: 0
   m_Name: Trap_Tile
   m_TagString: Untagged
@@ -183,3 +184,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &7743558157646146040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8129644243911870463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61873d7d5e1a649469b050651f9bc398, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HexTile
+  q: 0
+  r: 0
+  hexRadius: 1.62
+  highlightColor: {r: 0.8820755, g: 0.9737945, b: 1, a: 1}
