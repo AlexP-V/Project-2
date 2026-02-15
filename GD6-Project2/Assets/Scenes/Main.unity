@@ -3162,15 +3162,16 @@ MonoBehaviour:
   fieldRadius: 3
   fieldCenterQ: 0
   fieldCenterR: 0
-  animationCycleDuration: 0.25
+  animationCycleDuration: 0
   cyclesPerMovement: 2
+  moveDuration: 0.6
   cameraMoveDuration: 0.6
   cameraZoom: 5
-  animator: {fileID: 0}
+  animator: {fileID: 1467094301}
   stepCounterText: {fileID: 0}
   stepCounterTMP: {fileID: 303772640}
-  driftRadius: 0.25
-  driftSpeed: 3
+  driftRadius: 0.5
+  driftSpeed: 4
 --- !u!95 &1467094301
 Animator:
   serializedVersion: 7

@@ -10,6 +10,7 @@ public class PenguinController : MonoBehaviour
     public int q = 0;
     public int r = 0;
     public float hexRadius = 1f;
+
     [Header("Field Bounds")]
     [Tooltip("Maximum axial distance from center allowed (inclusive). Example: 1 -> center + its 6 neighbors.")]
     public int fieldRadius = 3;
@@ -18,15 +19,17 @@ public class PenguinController : MonoBehaviour
     public int fieldCenterR = 0;
 
     [Header("Movement Timing")]
-    public float animationCycleDuration = 0.25f; // seconds per cycle
+    public float animationCycleDuration = 0.25f; // seconds per cycle (used if moveDuration == 0)
     public int cyclesPerMovement = 2; // movement lasts animationCycleDuration * cyclesPerMovement
+    [Tooltip("Explicit movement duration in seconds. If > 0 it overrides animationCycleDuration * cyclesPerMovement.")]
+    public float moveDuration = 0f;
 
     [Header("Camera")]
     public float cameraMoveDuration = 0.3f;
     public float cameraZoom = 5f;
 
     [Header("Animation")]
-    public Animator animator; // expects bool "isWalking" and trigger "ouch" optionally
+    public Animator animator; // expects int 'direction' and bool 'isWalking'
 
     [Header("UI")]
     public Text stepCounterText; // optional
@@ -40,15 +43,11 @@ public class PenguinController : MonoBehaviour
 
     private bool isMoving = false;
 
-    private Vector3 idleOriginLocal = Vector3.zero;
-
     void Start()
     {
-        // position to initial axial coordinates
         Vector2 world = HexGridUtility.AxialToWorld(q, r, hexRadius);
         transform.position = new Vector3(world.x, world.y, transform.position.z);
         UpdateStepUI();
-        idleOriginLocal = Vector3.zero;
     }
 
     void Update()
@@ -62,6 +61,7 @@ public class PenguinController : MonoBehaviour
 
     private void CosmeticDrift()
     {
+        if (Camera.main == null) return;
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 center = HexGridUtility.AxialToWorld(q, r, hexRadius);
         Vector2 dir = new Vector2(mouseWorld.x - center.x, mouseWorld.y - center.y);
@@ -69,12 +69,13 @@ public class PenguinController : MonoBehaviour
         {
             dir = dir.normalized * Mathf.Min(driftRadius, dir.magnitude);
         }
-        Vector3 targetLocal = new Vector3(dir.x, dir.y, 0f);
-        transform.position = Vector3.Lerp(transform.position, new Vector3(center.x, center.y, transform.position.z) + targetLocal, Time.deltaTime * driftSpeed);
+        Vector3 target = new Vector3(center.x + dir.x, center.y + dir.y, transform.position.z);
+        transform.position = Vector3.Lerp(transform.position, target, Time.deltaTime * driftSpeed);
     }
 
     private void HandleMouseMoveAttempt()
     {
+        if (Camera.main == null) return;
         if (Input.GetMouseButtonDown(0)) // LMB
         {
             Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -86,52 +87,58 @@ public class PenguinController : MonoBehaviour
             {
                 if (!IsWithinField(tq, tr))
                 {
-                    // target outside allowed field — ignore input
+                    // outside field
                     return;
+                }
+
+                // set animator direction immediately and force the walk transition
+                int dq = tq - q;
+                int dr = tr - r;
+                if (animator != null)
+                {
+                    // toggle off then on to force Animator to retrigger transitions even if already true
+                    animator.SetBool("isWalking", false);
+                    SetDirectionFromDelta(dq, dr);
+                    animator.SetBool("isWalking", true);
                 }
 
                 StartCoroutine(MoveToTile(tq, tr));
             }
-            else
-            {
-                // not a neighbor; ignore
-            }
         }
+    }
+
+    private void SetDirectionFromDelta(int dq, int dr)
+    {
+        if (animator == null) return;
+        int dir = -1;
+        if (dq == 0 && dr == 1) dir = 0;        // Up
+        else if (dq == 1 && dr == 0) dir = 1;   // Right Up
+        else if (dq == 1 && dr == -1) dir = 2;  // Right Down
+        else if (dq == 0 && dr == -1) dir = 3;  // Down
+        else if (dq == -1 && dr == 0) dir = 4;  // Left Down
+        else if (dq == -1 && dr == 1) dir = 5;  // Left Up
+
+        if (dir >= 0) animator.SetInteger("direction", dir);
     }
 
     private bool IsNeighbor(int tq, int tr)
     {
-        // axial distance via cube coords
-        int x1 = q;
-        int z1 = r;
-        int y1 = -x1 - z1;
-
-        int x2 = tq;
-        int z2 = tr;
-        int y2 = -x2 - z2;
-
+        int x1 = q; int z1 = r; int y1 = -x1 - z1;
+        int x2 = tq; int z2 = tr; int y2 = -x2 - z2;
         int dx = Mathf.Abs(x1 - x2);
         int dy = Mathf.Abs(y1 - y2);
         int dz = Mathf.Abs(z1 - z2);
-
         int dist = (dx + dy + dz) / 2;
         return dist == 1;
     }
 
     private bool IsWithinField(int tq, int tr)
     {
-        int x1 = fieldCenterQ;
-        int z1 = fieldCenterR;
-        int y1 = -x1 - z1;
-
-        int x2 = tq;
-        int z2 = tr;
-        int y2 = -x2 - z2;
-
+        int x1 = fieldCenterQ; int z1 = fieldCenterR; int y1 = -x1 - z1;
+        int x2 = tq; int z2 = tr; int y2 = -x2 - z2;
         int dx = Mathf.Abs(x1 - x2);
         int dy = Mathf.Abs(y1 - y2);
         int dz = Mathf.Abs(z1 - z2);
-
         int dist = (dx + dy + dz) / 2;
         return dist <= fieldRadius;
     }
@@ -139,14 +146,17 @@ public class PenguinController : MonoBehaviour
     private IEnumerator MoveToTile(int tq, int tr)
     {
         isMoving = true;
-        if (animator != null) animator.SetBool("isWalking", true);
+        // animator.isWalking is set before starting this coroutine so animation runs during movement
 
-        Vector2 start = HexGridUtility.AxialToWorld(q, r, hexRadius);
+        // use current transform position as start so we don't 'snap' from a drift offset
+        Vector2 start = new Vector2(transform.position.x, transform.position.y);
         Vector2 end = HexGridUtility.AxialToWorld(tq, tr, hexRadius);
-        float duration = Mathf.Max(0.001f, animationCycleDuration * Mathf.Max(1, cyclesPerMovement));
+        float duration;
+        if (moveDuration > 0f)
+            duration = moveDuration;
+        else
+            duration = Mathf.Max(0.001f, animationCycleDuration * Mathf.Max(1, cyclesPerMovement));
         float t = 0f;
-
-        // (sprite flipping removed — handled by animations or separate system)
 
         while (t < duration)
         {
@@ -157,15 +167,12 @@ public class PenguinController : MonoBehaviour
             yield return null;
         }
 
-        // finish
-        q = tq;
-        r = tr;
+        q = tq; r = tr;
         if (animator != null) animator.SetBool("isWalking", false);
 
         stepCount++;
         UpdateStepUI();
 
-        // Center camera on resulting tile, then unlock movement
         var camCtrl = FindObjectOfType<CameraController>();
         if (camCtrl != null)
         {
@@ -177,21 +184,13 @@ public class PenguinController : MonoBehaviour
 
     private void UpdateStepUI()
     {
-        if (stepCounterText != null)
-        {
-            stepCounterText.text = stepCount.ToString();
-        }
-        if (stepCounterTMP != null)
-        {
-            stepCounterTMP.text = stepCount.ToString();
-        }
+        if (stepCounterText != null) stepCounterText.text = stepCount.ToString();
+        if (stepCounterTMP != null) stepCounterTMP.text = stepCount.ToString();
     }
 
-    // Public helper to set penguin to a specific axial coordinate instantly
     public void SetAxialPosition(int nq, int nr)
     {
-        q = nq;
-        r = nr;
+        q = nq; r = nr;
         Vector2 world = HexGridUtility.AxialToWorld(q, r, hexRadius);
         transform.position = new Vector3(world.x, world.y, transform.position.z);
     }
