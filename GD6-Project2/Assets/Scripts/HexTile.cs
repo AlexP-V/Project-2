@@ -12,6 +12,8 @@ public class HexTile : MonoBehaviour
     [Header("Special")]
     [Tooltip("Mark this tile as the finish tile. When the player reaches it the level can end.")]
     public bool isFinish = false;
+    [Tooltip("Mark this tile as the start tile. Player can spawn here if configured.")]
+    public bool isStart = false;
 
     [Header("Highlight")]
     public Color highlightColor = Color.yellow;

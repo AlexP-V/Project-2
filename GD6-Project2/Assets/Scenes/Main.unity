@@ -2640,6 +2640,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Normal_Tile3_0 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 9158826550274916095, guid: e183ea1f90c66471fac65d8a32604c83, type: 3}
+      propertyPath: isStart
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2862,6 +2866,7 @@ MonoBehaviour:
   q: 0
   r: 0
   hexRadius: 1.6199999
+  spawnAtStartTile: 1
   fieldRadius: 3
   fieldCenterQ: 0
   fieldCenterR: 0
@@ -3589,6 +3594,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 296038866}
     m_Modifications:
+    - target: {fileID: -5207102751721767015, guid: 9afa280cb5141498292c9cbfb0d3e35c, type: 3}
+      propertyPath: isStart
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1365941310645185393, guid: 9afa280cb5141498292c9cbfb0d3e35c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

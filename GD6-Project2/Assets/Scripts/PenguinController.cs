@@ -11,6 +11,10 @@ public class PenguinController : MonoBehaviour
     public int r = 0;
     public float hexRadius = 1f;
 
+    [Header("Spawn")]
+    [Tooltip("If true, the player GameObject will be moved to the tile marked `isStart` on scene start.")]
+    public bool spawnAtStartTile = true;
+
     [Header("Field Bounds")]
     [Tooltip("Maximum axial distance from center allowed (inclusive). Example: 1 -> center + its 6 neighbors.")]
     public int fieldRadius = 3;
@@ -47,6 +51,21 @@ public class PenguinController : MonoBehaviour
 
     void Start()
     {
+        // Optionally move the player to the tile marked as start in the scene before positioning.
+        if (spawnAtStartTile)
+        {
+            var tiles = FindObjectsOfType<HexTile>();
+            foreach (var t in tiles)
+            {
+                if (t != null && t.isStart)
+                {
+                    q = t.q;
+                    r = t.r;
+                    break;
+                }
+            }
+        }
+
         Vector2 world = HexGridUtility.AxialToWorld(q, r, hexRadius);
         transform.position = new Vector3(world.x, world.y, transform.position.z);
         UpdateStepUI();
