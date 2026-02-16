@@ -54,6 +54,7 @@ public class PenguinController : MonoBehaviour
     {
         if (!isMoving)
         {
+            PreviewHoverDirection();
             HandleMouseMoveAttempt();
             CosmeticDrift();
         }
@@ -193,5 +194,28 @@ public class PenguinController : MonoBehaviour
         q = nq; r = nr;
         Vector2 world = HexGridUtility.AxialToWorld(q, r, hexRadius);
         transform.position = new Vector3(world.x, world.y, transform.position.z);
+    }
+
+    private void PreviewHoverDirection()
+    {
+        if (Camera.main == null || animator == null) return;
+
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 axialF = HexGridUtility.WorldToAxial(new Vector2(mouseWorld.x, mouseWorld.y), hexRadius);
+
+        int tq, tr;
+        HexGridUtility.AxialRound(axialF.x, axialF.y, out tq, out tr);
+        bool isHoveringCurrentTile = (tq == q && tr == r);
+        if (IsNeighbor(tq, tr) && IsWithinField(tq, tr) && !isHoveringCurrentTile)
+        {
+            int dq = tq - q;
+            int dr = tr - r;
+            SetDirectionFromDelta(dq, dr);
+            animator.SetBool("isWalking", true);
+        }
+        else
+        {
+            animator.SetBool("isWalking", false);
+        }
     }
 }
