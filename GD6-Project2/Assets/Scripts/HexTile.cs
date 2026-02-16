@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(SpriteRenderer))]
@@ -20,10 +21,60 @@ public class HexTile : MonoBehaviour
     [Tooltip("Optional GameObject (child) to enable when this tile's trap is activated.")]
     public GameObject trapOverlay;
 
+    // runtime cached trap overlay renderer and original colour for fade operations
+    SpriteRenderer _trapOverlaySR = null;
+    Color _trapOverlayOriginalColor = Color.white;
+    Coroutine _trapFadeCoroutine = null;
+    
+    // shake configuration for trap appearance
+    [Tooltip("Duration of the trap shake when it appears")] public float trapShakeDuration = 0.35f;
+    [Tooltip("Maximum positional magnitude of trap shake in world units")] public float trapShakeMagnitude = 0.12f;
+    Coroutine _trapShakeCoroutine = null;
+    Vector3 _trapOverlayOriginalLocalPos = Vector3.zero;
+
     public void SetTrapVisual(bool on)
     {
-        if (trapOverlay != null)
-            trapOverlay.SetActive(on);
+        if (trapOverlay == null) return;
+
+        // If there's a sprite renderer, prefer fading; otherwise just toggle active state.
+        if (on)
+        {
+            // cancel any pending fade-out
+            if (_trapFadeCoroutine != null)
+            {
+                StopCoroutine(_trapFadeCoroutine);
+                _trapFadeCoroutine = null;
+            }
+
+            if (_trapOverlaySR != null)
+            {
+                // restore original colour/alpha before showing
+                _trapOverlaySR.color = _trapOverlayOriginalColor;
+            }
+
+            trapOverlay.SetActive(true);
+            // start shake effect when shown
+            if (_trapShakeCoroutine != null) StopCoroutine(_trapShakeCoroutine);
+            _trapShakeCoroutine = StartCoroutine(ShakeTrap(trapOverlay.transform, trapShakeDuration, trapShakeMagnitude));
+            Debug.Log("trap is visible");
+        }
+        else
+        {
+            if (_trapOverlaySR != null)
+            {
+                // stop any shaking so fade starts from original position
+                if (_trapShakeCoroutine != null) { StopCoroutine(_trapShakeCoroutine); _trapShakeCoroutine = null; }
+
+                // start fade-out coroutine (non-blocking)
+                if (_trapFadeCoroutine != null) StopCoroutine(_trapFadeCoroutine);
+                _trapFadeCoroutine = StartCoroutine(FadeOutAndDisable(_trapOverlaySR, 0.5f));
+            }
+            else
+            {
+                trapOverlay.SetActive(false);
+                Debug.Log("trap is invisible");
+            }
+        }
     }
 
     [Header("Highlight")]
@@ -58,8 +109,58 @@ public class HexTile : MonoBehaviour
 
         if (trapOverlay != null)
         {
+            // cache sprite renderer and original colour if present
+            _trapOverlaySR = trapOverlay.GetComponent<SpriteRenderer>();
+            if (_trapOverlaySR != null) _trapOverlayOriginalColor = _trapOverlaySR.color;
+
+            // cache original local position so shake can restore it
+            _trapOverlayOriginalLocalPos = trapOverlay.transform.localPosition;
+
             trapOverlay.SetActive(false);
         }
+    }
+
+    IEnumerator FadeOutAndDisable(SpriteRenderer sr, float duration)
+    {
+        if (sr == null) yield break;
+        float startA = sr.color.a;
+        float t = 0f;
+        Color c = sr.color;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / duration);
+            c.a = Mathf.Lerp(startA, 0f, p);
+            sr.color = c;
+            yield return null;
+        }
+
+        if (trapOverlay != null) trapOverlay.SetActive(false);
+
+        // restore original color so next show uses original alpha
+        if (sr != null) sr.color = _trapOverlayOriginalColor;
+
+        _trapFadeCoroutine = null;
+        Debug.Log("trap is invisible");
+    }
+
+    IEnumerator ShakeTrap(Transform t, float duration, float magnitude)
+    {
+        if (t == null) yield break;
+        float elapsed = 0f;
+        Vector3 original = _trapOverlayOriginalLocalPos;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float pct = Mathf.Clamp01(elapsed / duration);
+            float damper = 1f - pct; // ease out
+            float x = (Random.value * 2f - 1f) * magnitude * damper;
+            float y = (Random.value * 2f - 1f) * magnitude * damper;
+            t.localPosition = original + new Vector3(x, y, 0f);
+            yield return null;
+        }
+        t.localPosition = original;
+        _trapShakeCoroutine = null;
     }
 
     void OnEnable()
