@@ -2989,6 +2989,9 @@ MonoBehaviour:
   cameraZoom: 3
   winDelay: 2
   trapDelay: 2
+  footprintPrefab: {fileID: 7833261113402240593, guid: 46fc76733dbc042f1af91fd5673d628a, type: 3}
+  footprintRotationOffset: 90
+  footprintJitter: 0.1
   animator: {fileID: 1467094301}
   stepCounterText: {fileID: 0}
   stepCounterTMP: {fileID: 303772640}

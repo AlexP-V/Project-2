@@ -36,6 +36,14 @@ public class PenguinController : MonoBehaviour
     [Tooltip("Seconds to wait after trap activation before forcing the player back")]
     public float trapDelay = 2f;
 
+    [Header("Footprints")]
+    [Tooltip("Prefab for footprint. Should have a SpriteRenderer. A footprint will be instantiated midway between tiles and faded in during movement.")]
+    public GameObject footprintPrefab;
+    [Tooltip("Optional angle offset (degrees) applied to instantiated footprint so it matches sprite artwork orientation.")]
+    public float footprintRotationOffset = 0f;
+    [Tooltip("Maximum random jitter (world units) applied to footprint position on both X and Y axes.")]
+    public float footprintJitter = 0.05f;
+
     [Header("Animation")]
     public Animator animator; // expects int 'direction' and bool 'isWalking'
 
@@ -185,12 +193,52 @@ public class PenguinController : MonoBehaviour
             duration = Mathf.Max(0.001f, animationCycleDuration * Mathf.Max(1, cyclesPerMovement));
         float t = 0f;
 
+        // Instantiate a footprint at the midpoint and start it fully transparent; it will fade in over the movement.
+        GameObject footprintInstance = null;
+        SpriteRenderer footprintSR = null;
+        Color originalFootprintColor = Color.white;
+        float originalFootprintAlpha = 1f;
+        if (footprintPrefab != null)
+        {
+            Vector2 mid = (start + end) * 0.5f;
+            // apply small random jitter so footprints look natural
+            float jx = Random.Range(-footprintJitter, footprintJitter);
+            float jy = Random.Range(-footprintJitter, footprintJitter);
+            mid += new Vector2(jx, jy);
+            Vector3 mid3 = new Vector3(mid.x, mid.y, transform.position.z);
+            footprintInstance = Instantiate(footprintPrefab, mid3, Quaternion.identity);
+            // rotate footprint so it's parallel to movement direction
+            float angle = Mathf.Atan2(end.y - start.y, end.x - start.x) * Mathf.Rad2Deg + footprintRotationOffset;
+            footprintInstance.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+            footprintSR = footprintInstance.GetComponent<SpriteRenderer>();
+            if (footprintSR != null)
+            {
+                originalFootprintColor = footprintSR.color;
+                originalFootprintAlpha = originalFootprintColor.a;
+                var c = originalFootprintColor;
+                c.a = 0f;
+                footprintSR.color = c;
+            }
+            else
+            {
+                Debug.LogWarning("Footprint prefab has no SpriteRenderer: " + footprintPrefab.name);
+            }
+        }
+
         while (t < duration)
         {
             t += Time.deltaTime;
             float p = Mathf.Clamp01(t / duration);
             Vector2 pos = Vector2.Lerp(start, end, p);
             transform.position = new Vector3(pos.x, pos.y, transform.position.z);
+
+            // Fade footprint in to fully visible by end of movement
+            if (footprintSR != null)
+            {
+                var c = originalFootprintColor;
+                c.a = Mathf.Lerp(0f, originalFootprintAlpha, Mathf.Clamp01(p));
+                footprintSR.color = c;
+            }
             yield return null;
         }
 
