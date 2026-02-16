@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Normal_Tile4_0
       objectReference: {fileID: 0}
+    - target: {fileID: 7366432766668855486, guid: 623ebb735e58d443ba10bd5ff6599323, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

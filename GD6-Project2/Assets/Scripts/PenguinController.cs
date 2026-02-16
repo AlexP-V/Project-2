@@ -31,8 +31,8 @@ public class PenguinController : MonoBehaviour
     public float moveDuration = 0f;
 
     [Header("Camera")]
+    // camera zoom is centralized in CameraController via `zoomInSize` and `zoomOutSize`.
     public float cameraMoveDuration = 0.3f;
-    public float cameraZoom = 5f;
     [Tooltip("Seconds to wait on reaching a finish tile before returning to the menu (for win animation)")]
     public float winDelay = 2f;
     [Tooltip("Seconds to wait after trap activation before forcing the player back")]
@@ -67,6 +67,8 @@ public class PenguinController : MonoBehaviour
     public int stepCount { get; private set; } = 0;
 
     private bool isMoving = false;
+    // Expose movement state so CameraController can avoid overriding camera while player moves
+    public bool IsMoving { get { return isMoving; } }
 
     // runtime list of fake trail footprint instances created this session
     private List<GameObject> _fakeTrails = new List<GameObject>();
@@ -295,11 +297,16 @@ public class PenguinController : MonoBehaviour
         var camCtrl = FindObjectOfType<CameraController>();
         if (camCtrl != null)
         {
-            yield return StartCoroutine(camCtrl.CenterOnAxialCoroutine(q, r, hexRadius, cameraMoveDuration, cameraZoom));
+            yield return StartCoroutine(camCtrl.CenterOnAxialCoroutine(q, r, hexRadius, cameraMoveDuration, camCtrl.zoomInSize));
         }
 
         // If we've landed on a finish tile, wait `winDelay` seconds then return to the menu (scene 0).
         var landedTile = HexTileRegistry.GetAt(q, r);
+        Debug.Log("Landed tile lookup at (" + q + "," + r + ") -> " + (landedTile != null ? "found" : "null"));
+        if (landedTile != null)
+        {
+            Debug.Log("landedTile.isTrap=" + landedTile.isTrap + ", trapOverlay=" + (landedTile.trapOverlay != null));
+        }
         if (landedTile != null && landedTile.isFinish)
         {
             yield return new WaitForSeconds(winDelay);
