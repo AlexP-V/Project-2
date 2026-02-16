@@ -11,6 +11,7 @@ public class MenuStartOnClick : MonoBehaviour
         if (Input.GetMouseButtonDown(0) || Input.touchCount > 0)
         {
             enabled = false; // prevent multiple triggers
+            AudioManager.Instance.PlayStartSound();
             SceneTransition.LoadSceneWithFade(targetSceneIndex);
         }
     }

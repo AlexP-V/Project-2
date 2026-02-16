@@ -158,6 +158,8 @@ public class PenguinController : MonoBehaviour
                 }
 
                 StartCoroutine(MoveToTile(tq, tr));
+                AudioManager.Instance.PlayFootstepSound();
+                AudioManager.Instance.PlayClickSound();
             }
         }
     }
@@ -320,6 +322,7 @@ public class PenguinController : MonoBehaviour
         }
         if (landedTile != null && landedTile.isFinish)
         {
+            AudioManager.Instance.PlayWinSound();
             yield return new WaitForSeconds(winDelay);
             try { SaveManager.FinalizeRun("finished"); } catch (Exception) { }
             SceneTransition.LoadSceneWithFade(0);
@@ -333,6 +336,7 @@ public class PenguinController : MonoBehaviour
         if (landedTile != null && landedTile.isTrap && !isForced)
         {
             landedTile.SetTrapVisual(true);
+            AudioManager.Instance.PlayFakeSound();
 
             // keep input disabled while trap sequence runs
             isMoving = true;
@@ -473,6 +477,8 @@ public class PenguinController : MonoBehaviour
             _firstFakeFired = true;
             try { OnFirstFakeTrail?.Invoke(); } catch (Exception) { }
         }
+        AudioManager.Instance.PlayFakeSound();
+        AudioManager.Instance.PlayClickSound();
     }
 
     public void SetAxialPosition(int nq, int nr)

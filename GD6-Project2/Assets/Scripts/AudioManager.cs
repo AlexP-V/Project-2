@@ -6,9 +6,15 @@ public class AudioManager : MonoBehaviour
 
     public AudioSource footstepSource;
     public AudioSource fakeSource;
+    public AudioSource startSource;
+    public AudioSource winSource;
+    public AudioSource clickSource;
 
     public AudioClip footstepClip;
     public AudioClip fakeClip;
+    public AudioClip startClip;
+    public AudioClip winClip;
+    public AudioClip clickClip;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -36,5 +42,20 @@ public class AudioManager : MonoBehaviour
     public void PlayFakeSound()
     {
         fakeSource.PlayOneShot(fakeClip);
+    }
+
+    public void PlayStartSound()
+    {
+        startSource.PlayOneShot(startClip);
+    }
+
+    public void PlayWinSound()
+    {
+        winSource.PlayOneShot(winClip);
+    }
+
+    public void PlayClickSound()
+    {
+        clickSource.PlayOneShot(clickClip);
     }
 }

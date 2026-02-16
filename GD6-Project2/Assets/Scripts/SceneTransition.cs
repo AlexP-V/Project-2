@@ -8,7 +8,7 @@ public class SceneTransition : MonoBehaviour
     public static SceneTransition Instance { get; private set; }
 
     [Tooltip("Default fade duration in seconds")]
-    public float defaultDuration = 1f;
+    public float defaultDuration = 2f;
     [Tooltip("Color to fade to/from (alpha is controlled by the transition)")]
     public Color fadeColor = Color.white;
 
@@ -51,9 +51,9 @@ public class SceneTransition : MonoBehaviour
         StartCoroutine(FadeAndSwitch(sceneBuildIndex, Mathf.Max(0.01f, duration)));
     }
 
-    public static void LoadSceneWithFade(int sceneBuildIndex, float duration = -1f)
+    public static void LoadSceneWithFade(int sceneBuildIndex, float duration = -2f)
     {
-        if (duration <= 0f) duration = Instance != null ? Instance.defaultDuration : 1f;
+        if (duration <= 0f) duration = Instance != null ? Instance.defaultDuration : 2f;
         if (Instance == null)
         {
             var go = new GameObject("SceneTransition");
