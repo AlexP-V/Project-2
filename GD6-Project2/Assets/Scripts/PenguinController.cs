@@ -8,6 +8,11 @@ using System.Collections.Generic;
 [RequireComponent(typeof(SpriteRenderer))]
 public class PenguinController : MonoBehaviour
 {
+    public static event Action OnFirstMove;
+    public static event Action OnFirstFakeTrail;
+
+    private bool _firstMoveFired = false;
+    private bool _firstFakeFired = false;
     [Header("Hex Position")]
     public int q = 0;
     public int r = 0;
@@ -286,13 +291,19 @@ public class PenguinController : MonoBehaviour
 
         stepCount++;
         UpdateStepUI();
-
         try
         {
             long ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             SaveManager.RecordStep(q, r, ts);
         }
         catch (Exception) { }
+
+        // notify first-move listeners once
+        if (!_firstMoveFired)
+        {
+            _firstMoveFired = true;
+            try { OnFirstMove?.Invoke(); } catch (Exception) { }
+        }
 
         var camCtrl = FindObjectOfType<CameraController>();
         if (camCtrl != null)
@@ -456,6 +467,12 @@ public class PenguinController : MonoBehaviour
             SaveManager.RecordFakeTrail(tq, tr, ts);
         }
         catch (Exception) { }
+        // notify first-fake listeners once
+        if (!_firstFakeFired)
+        {
+            _firstFakeFired = true;
+            try { OnFirstFakeTrail?.Invoke(); } catch (Exception) { }
+        }
     }
 
     public void SetAxialPosition(int nq, int nr)
