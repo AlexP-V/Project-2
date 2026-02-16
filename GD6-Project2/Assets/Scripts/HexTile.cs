@@ -14,6 +14,17 @@ public class HexTile : MonoBehaviour
     public bool isFinish = false;
     [Tooltip("Mark this tile as the start tile. Player can spawn here if configured.")]
     public bool isStart = false;
+    [Tooltip("Mark this tile as a trap. When the player lands here special trap behavior triggers.")]
+    public bool isTrap = false;
+
+    [Tooltip("Optional GameObject (child) to enable when this tile's trap is activated.")]
+    public GameObject trapOverlay;
+
+    public void SetTrapVisual(bool on)
+    {
+        if (trapOverlay != null)
+            trapOverlay.SetActive(on);
+    }
 
     [Header("Highlight")]
     public Color highlightColor = Color.yellow;
@@ -27,6 +38,28 @@ public class HexTile : MonoBehaviour
         if (sr != null) originalColor = sr.color;
         UpdateAxialFromPosition();
         HexTileRegistry.Register(this);
+
+        // If no explicit trap overlay assigned, try to find a child named like "trap" and use it.
+        if (trapOverlay == null)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var c = transform.GetChild(i);
+                if (c == null) continue;
+                var name = c.gameObject.name;
+                if (string.IsNullOrEmpty(name)) continue;
+                if (name.ToLower().Contains("trap"))
+                {
+                    trapOverlay = c.gameObject;
+                    break;
+                }
+            }
+        }
+
+        if (trapOverlay != null)
+        {
+            trapOverlay.SetActive(false);
+        }
     }
 
     void OnEnable()

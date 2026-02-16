@@ -33,6 +33,8 @@ public class PenguinController : MonoBehaviour
     public float cameraZoom = 5f;
     [Tooltip("Seconds to wait on reaching a finish tile before returning to the menu (for win animation)")]
     public float winDelay = 2f;
+    [Tooltip("Seconds to wait after trap activation before forcing the player back")]
+    public float trapDelay = 2f;
 
     [Header("Animation")]
     public Animator animator; // expects int 'direction' and bool 'isWalking'
@@ -165,8 +167,11 @@ public class PenguinController : MonoBehaviour
         return dist <= fieldRadius;
     }
 
-    private IEnumerator MoveToTile(int tq, int tr)
+    private IEnumerator MoveToTile(int tq, int tr, bool isForced = false)
     {
+        // remember where we started so we can force-walk back if this is a trap
+        int fromQ = q; int fromR = r;
+
         isMoving = true;
         // animator.isWalking is set before starting this coroutine so animation runs during movement
 
@@ -207,6 +212,33 @@ public class PenguinController : MonoBehaviour
         {
             yield return new WaitForSeconds(winDelay);
             SceneTransition.LoadSceneWithFade(0);
+            // keep coroutine ending here; scene will change
+            yield break;
+        }
+
+
+        // If this tile is a trap (and this movement isn't already a forced return), activate trap visual,
+        // disable input, wait `trapDelay`, then force-walk back.
+        if (landedTile != null && landedTile.isTrap && !isForced)
+        {
+            landedTile.SetTrapVisual(true);
+
+            // keep input disabled while trap sequence runs
+            isMoving = true;
+
+            // wait so player can see trap (e.g., play ouch animation)
+            yield return new WaitForSeconds(trapDelay);
+
+            // forcefully walk the penguin back to where it came from; this counts as another step
+            yield return StartCoroutine(MoveToTile(fromQ, fromR, true));
+
+            // hide trap visual now that we've returned
+            landedTile.SetTrapVisual(false);
+
+            // after forced walk completes, re-enable input
+            isMoving = false;
+
+            yield break;
         }
 
         isMoving = false;
