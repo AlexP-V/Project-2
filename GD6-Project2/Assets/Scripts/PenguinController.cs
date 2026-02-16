@@ -307,8 +307,8 @@ public class PenguinController : MonoBehaviour
 
     private void UpdateStepUI()
     {
-        if (stepCounterText != null) stepCounterText.text = stepCount.ToString();
-        if (stepCounterTMP != null) stepCounterTMP.text = stepCount.ToString();
+        if (stepCounterText != null) stepCounterText.text = "steps: " + stepCount.ToString();
+        if (stepCounterTMP != null) stepCounterTMP.text = "steps: " + stepCount.ToString();
     }
 
     private void UpdateFakeTrailsUI()
