@@ -1081,6 +1081,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   cam: {fileID: 0}
+  zoomOutSize: 6
+  hasZoomedIn: 0
 --- !u!1001 &596464177
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3165,8 +3167,8 @@ MonoBehaviour:
   animationCycleDuration: 0
   cyclesPerMovement: 2
   moveDuration: 0.6
-  cameraMoveDuration: 0.6
-  cameraZoom: 5
+  cameraMoveDuration: 1
+  cameraZoom: 3
   animator: {fileID: 1467094301}
   stepCounterText: {fileID: 0}
   stepCounterTMP: {fileID: 303772640}
