@@ -9,6 +9,9 @@ public class HexTile : MonoBehaviour
     public int r = 0;
     [Tooltip("Hex radius used to compute axial coords from world position if needed")]
     public float hexRadius = 1f;
+    [Header("Special")]
+    [Tooltip("Mark this tile as the finish tile. When the player reaches it the level can end.")]
+    public bool isFinish = false;
 
     [Header("Highlight")]
     public Color highlightColor = Color.yellow;

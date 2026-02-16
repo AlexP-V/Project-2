@@ -27,6 +27,8 @@ public class PenguinController : MonoBehaviour
     [Header("Camera")]
     public float cameraMoveDuration = 0.3f;
     public float cameraZoom = 5f;
+    [Tooltip("Seconds to wait on reaching a finish tile before returning to the menu (for win animation)")]
+    public float winDelay = 2f;
 
     [Header("Animation")]
     public Animator animator; // expects int 'direction' and bool 'isWalking'
@@ -178,6 +180,14 @@ public class PenguinController : MonoBehaviour
         if (camCtrl != null)
         {
             yield return StartCoroutine(camCtrl.CenterOnAxialCoroutine(q, r, hexRadius, cameraMoveDuration, cameraZoom));
+        }
+
+        // If we've landed on a finish tile, wait `winDelay` seconds then return to the menu (scene 0).
+        var landedTile = HexTileRegistry.GetAt(q, r);
+        if (landedTile != null && landedTile.isFinish)
+        {
+            yield return new WaitForSeconds(winDelay);
+            SceneTransition.LoadSceneWithFade(0);
         }
 
         isMoving = false;
