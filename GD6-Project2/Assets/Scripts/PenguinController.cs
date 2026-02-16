@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class PenguinController : MonoBehaviour
@@ -50,6 +51,13 @@ public class PenguinController : MonoBehaviour
     [Header("UI")]
     public Text stepCounterText; // optional
     public TextMeshProUGUI stepCounterTMP; // optional
+    [Header("Fake Trails")]
+    [Tooltip("How many fake trails the player can place this session.")]
+    public int fakeTrailsLeft = 3;
+    public Text fakeTrailsLeftText; // optional
+    public TextMeshProUGUI fakeTrailsLeftTMP; // optional
+    [Tooltip("Colour used to highlight fake trails created this session.")]
+    public Color fakeTrailHighlightColor = Color.cyan;
 
     [Header("Cosmetic Drift")]
     public float driftRadius = 0.25f; // how far penguin can drift inside the tile
@@ -58,6 +66,9 @@ public class PenguinController : MonoBehaviour
     public int stepCount { get; private set; } = 0;
 
     private bool isMoving = false;
+
+    // runtime list of fake trail footprint instances created this session
+    private List<GameObject> _fakeTrails = new List<GameObject>();
 
     void Start()
     {
@@ -79,6 +90,7 @@ public class PenguinController : MonoBehaviour
         Vector2 world = HexGridUtility.AxialToWorld(q, r, hexRadius);
         transform.position = new Vector3(world.x, world.y, transform.position.z);
         UpdateStepUI();
+        UpdateFakeTrailsUI();
     }
 
     void Update()
@@ -86,6 +98,7 @@ public class PenguinController : MonoBehaviour
         if (!isMoving)
         {
             PreviewHoverDirection();
+            HandleFakeTrailInput();
             HandleMouseMoveAttempt();
             CosmeticDrift();
         }
@@ -296,6 +309,69 @@ public class PenguinController : MonoBehaviour
     {
         if (stepCounterText != null) stepCounterText.text = stepCount.ToString();
         if (stepCounterTMP != null) stepCounterTMP.text = stepCount.ToString();
+    }
+
+    private void UpdateFakeTrailsUI()
+    {
+        if (fakeTrailsLeftText != null) fakeTrailsLeftText.text = "fake trails left: " + fakeTrailsLeft.ToString();
+        if (fakeTrailsLeftTMP != null) fakeTrailsLeftTMP.text = "fake trails left: " + fakeTrailsLeft.ToString();
+    }
+
+    private void RefreshFakeTrailHighlights()
+    {
+        for (int i = 0; i < _fakeTrails.Count; i++)
+        {
+            var go = _fakeTrails[i];
+            if (go == null) continue;
+            var sr = go.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                Color c = fakeTrailHighlightColor;
+                c.a = sr.color.a; // preserve alpha
+                sr.color = c;
+            }
+        }
+    }
+
+    private void HandleFakeTrailInput()
+    {
+        if (Camera.main == null) return;
+        if (!Input.GetKeyDown(KeyCode.F)) return;
+
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 axialF = HexGridUtility.WorldToAxial(new Vector2(mouseWorld.x, mouseWorld.y), hexRadius);
+        int tq, tr;
+        HexGridUtility.AxialRound(axialF.x, axialF.y, out tq, out tr);
+        bool isHoveringCurrentTile = (tq == q && tr == r);
+
+        if (!IsNeighbor(tq, tr) || !IsWithinField(tq, tr) || isHoveringCurrentTile) return;
+
+        if (fakeTrailsLeft <= 0) return;
+        if (footprintPrefab == null) return;
+
+        Vector2 start = new Vector2(transform.position.x, transform.position.y);
+        Vector2 end = HexGridUtility.AxialToWorld(tq, tr, hexRadius);
+        Vector2 mid = (start + end) * 0.5f;
+        float jx = Random.Range(-footprintJitter, footprintJitter);
+        float jy = Random.Range(-footprintJitter, footprintJitter);
+        mid += new Vector2(jx, jy);
+        Vector3 mid3 = new Vector3(mid.x, mid.y, transform.position.z);
+
+        GameObject footprintInstance = Instantiate(footprintPrefab, mid3, Quaternion.identity);
+        float angle = Mathf.Atan2(end.y - start.y, end.x - start.x) * Mathf.Rad2Deg + footprintRotationOffset;
+        footprintInstance.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        var sr = footprintInstance.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            Color c = fakeTrailHighlightColor;
+            c.a = sr.color.a; // preserve prefab alpha
+            sr.color = c;
+        }
+
+        _fakeTrails.Add(footprintInstance);
+        fakeTrailsLeft--;
+        UpdateFakeTrailsUI();
+        RefreshFakeTrailHighlights();
     }
 
     public void SetAxialPosition(int nq, int nr)

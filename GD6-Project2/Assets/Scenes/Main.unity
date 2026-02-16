@@ -2995,6 +2995,10 @@ MonoBehaviour:
   animator: {fileID: 1467094301}
   stepCounterText: {fileID: 0}
   stepCounterTMP: {fileID: 303772640}
+  fakeTrailsLeft: 10
+  fakeTrailsLeftText: {fileID: 0}
+  fakeTrailsLeftTMP: {fileID: 1293318655}
+  fakeTrailHighlightColor: {r: 0.75495166, g: 0.61387503, b: 0.8396226, a: 1}
   driftRadius: 0.5
   driftSpeed: 4
 --- !u!95 &1467094301
