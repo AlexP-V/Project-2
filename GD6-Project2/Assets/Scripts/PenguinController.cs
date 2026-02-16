@@ -319,14 +319,28 @@ public class PenguinController : MonoBehaviour
             // keep input disabled while trap sequence runs
             isMoving = true;
 
+            if (animator != null)
+            {
+                animator.SetBool("isTrapped", true);
+            }
+
             // wait so player can see trap (e.g., play ouch animation)
             yield return new WaitForSeconds(trapDelay);
+            if (animator != null)
+            {
+                animator.SetBool("isTrapped", false);
+            }
 
             // forcefully walk the penguin back to where it came from; this counts as another step
             yield return StartCoroutine(MoveToTile(fromQ, fromR, true));
 
             // hide trap visual now that we've returned
             landedTile.SetTrapVisual(false);
+            if (animator != null)
+            {
+                animator.SetBool("isWalking", false);
+            }
+
 
             // after forced walk completes, re-enable input
             isMoving = false;
