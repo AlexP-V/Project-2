@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -91,6 +92,8 @@ public class PenguinController : MonoBehaviour
         transform.position = new Vector3(world.x, world.y, transform.position.z);
         UpdateStepUI();
         UpdateFakeTrailsUI();
+        // start a new run in the SaveManager
+        try { SaveManager.StartRun(q, r); } catch (Exception) { }
     }
 
     void Update()
@@ -215,8 +218,8 @@ public class PenguinController : MonoBehaviour
         {
             Vector2 mid = (start + end) * 0.5f;
             // apply small random jitter so footprints look natural
-            float jx = Random.Range(-footprintJitter, footprintJitter);
-            float jy = Random.Range(-footprintJitter, footprintJitter);
+            float jx = UnityEngine.Random.Range(-footprintJitter, footprintJitter);
+            float jy = UnityEngine.Random.Range(-footprintJitter, footprintJitter);
             mid += new Vector2(jx, jy);
             Vector3 mid3 = new Vector3(mid.x, mid.y, transform.position.z);
             footprintInstance = Instantiate(footprintPrefab, mid3, Quaternion.identity);
@@ -236,6 +239,27 @@ public class PenguinController : MonoBehaviour
             {
                 Debug.LogWarning("Footprint prefab has no SpriteRenderer: " + footprintPrefab.name);
             }
+
+                // record the footprint transform and final color for saving
+                try
+                {
+                    var fp = new FootprintEntry();
+                    fp.posX = mid3.x;
+                    fp.posY = mid3.y;
+                    fp.posZ = mid3.z;
+                    fp.rotZ = footprintInstance.transform.eulerAngles.z;
+                    fp.scaleX = footprintInstance.transform.localScale.x;
+                    fp.scaleY = footprintInstance.transform.localScale.y;
+                    // final color will be the prefab's original color (before we made it transparent)
+                    fp.colorR = originalFootprintColor.r;
+                    fp.colorG = originalFootprintColor.g;
+                    fp.colorB = originalFootprintColor.b;
+                    fp.colorA = originalFootprintAlpha;
+                    fp.isFake = false;
+                    fp.t = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    SaveManager.RecordFootprint(fp);
+                }
+                catch (Exception) { }
         }
 
         while (t < duration)
@@ -261,6 +285,13 @@ public class PenguinController : MonoBehaviour
         stepCount++;
         UpdateStepUI();
 
+        try
+        {
+            long ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            SaveManager.RecordStep(q, r, ts);
+        }
+        catch (Exception) { }
+
         var camCtrl = FindObjectOfType<CameraController>();
         if (camCtrl != null)
         {
@@ -272,6 +303,7 @@ public class PenguinController : MonoBehaviour
         if (landedTile != null && landedTile.isFinish)
         {
             yield return new WaitForSeconds(winDelay);
+            try { SaveManager.FinalizeRun("finished"); } catch (Exception) { }
             SceneTransition.LoadSceneWithFade(0);
             // keep coroutine ending here; scene will change
             yield break;
@@ -352,8 +384,8 @@ public class PenguinController : MonoBehaviour
         Vector2 start = new Vector2(transform.position.x, transform.position.y);
         Vector2 end = HexGridUtility.AxialToWorld(tq, tr, hexRadius);
         Vector2 mid = (start + end) * 0.5f;
-        float jx = Random.Range(-footprintJitter, footprintJitter);
-        float jy = Random.Range(-footprintJitter, footprintJitter);
+        float jx = UnityEngine.Random.Range(-footprintJitter, footprintJitter);
+        float jy = UnityEngine.Random.Range(-footprintJitter, footprintJitter);
         mid += new Vector2(jx, jy);
         Vector3 mid3 = new Vector3(mid.x, mid.y, transform.position.z);
 
@@ -361,8 +393,11 @@ public class PenguinController : MonoBehaviour
         float angle = Mathf.Atan2(end.y - start.y, end.x - start.x) * Mathf.Rad2Deg + footprintRotationOffset;
         footprintInstance.transform.rotation = Quaternion.Euler(0f, 0f, angle);
         var sr = footprintInstance.GetComponent<SpriteRenderer>();
+        Color prefabBaseColor = Color.white;
         if (sr != null)
         {
+            // capture the prefab's base color before tinting so saved fake footprints keep the base color
+            prefabBaseColor = sr.color;
             Color c = fakeTrailHighlightColor;
             c.a = sr.color.a; // preserve prefab alpha
             sr.color = c;
@@ -372,6 +407,34 @@ public class PenguinController : MonoBehaviour
         fakeTrailsLeft--;
         UpdateFakeTrailsUI();
         RefreshFakeTrailHighlights();
+        try
+        {
+            var fp = new FootprintEntry();
+            fp.posX = mid3.x;
+            fp.posY = mid3.y;
+            fp.posZ = mid3.z;
+            fp.rotZ = footprintInstance.transform.eulerAngles.z;
+            fp.scaleX = footprintInstance.transform.localScale.x;
+            fp.scaleY = footprintInstance.transform.localScale.y;
+            // save the prefab's base color (not the session tint) so previous runs render without tint
+            if (sr != null)
+            {
+                fp.colorR = prefabBaseColor.r;
+                fp.colorG = prefabBaseColor.g;
+                fp.colorB = prefabBaseColor.b;
+                fp.colorA = prefabBaseColor.a;
+            }
+            fp.isFake = true;
+            fp.t = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            SaveManager.RecordFootprint(fp);
+        }
+        catch (Exception) { }
+        try
+        {
+            long ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            SaveManager.RecordFakeTrail(tq, tr, ts);
+        }
+        catch (Exception) { }
     }
 
     public void SetAxialPosition(int nq, int nr)
