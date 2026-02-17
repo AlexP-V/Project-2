@@ -6455,11 +6455,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8656384113292100344, guid: b84f640fd00784534b349b46d531eddd, type: 3}
       propertyPath: m_Color.b
-      value: 0.94509804
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8656384113292100344, guid: b84f640fd00784534b349b46d531eddd, type: 3}
+      propertyPath: m_Color.g
+      value: 0.9292453
       objectReference: {fileID: 0}
     - target: {fileID: 8656384113292100344, guid: b84f640fd00784534b349b46d531eddd, type: 3}
       propertyPath: m_Color.r
-      value: 0.9019608
+      value: 0.97538966
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7274,11 +7278,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 661053465145704394, guid: d783d7d6f50914cd786c4739f4af4211, type: 3}
       propertyPath: isTrap
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3645980133085403208, guid: d783d7d6f50914cd786c4739f4af4211, type: 3}
       propertyPath: m_Name
-      value: Normal_Tile4_0 (5)
+      value: ttttrap
       objectReference: {fileID: 0}
     - target: {fileID: 4930072251298603603, guid: d783d7d6f50914cd786c4739f4af4211, type: 3}
       propertyPath: m_LocalPosition.x
@@ -7779,11 +7783,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6890081863787683386, guid: 623ebb735e58d443ba10bd5ff6599323, type: 3}
       propertyPath: isTrap
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7218122251488344504, guid: 623ebb735e58d443ba10bd5ff6599323, type: 3}
       propertyPath: m_Name
-      value: Normal_Tile1_0 (5)
+      value: trapp
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8275,8 +8279,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 25
+  m_fontSizeBase: 25
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -8314,7 +8318,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: -46.86212, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -8342,7 +8346,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TutorialTextController
   tutorialTMP: {fileID: 761518125}
   canvasGroup: {fileID: 0}
-  offset: {x: 60, y: -60}
+  offset: {x: 80, y: -80}
   fadeDuration: 0.5
   mouseMoveThreshold: 2
 --- !u!225 &761518128
@@ -13919,11 +13923,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2155858769955622171, guid: 2d6936e7d2c6d4b0997ffba7205dfad7, type: 3}
       propertyPath: m_Name
-      value: trap7
+      value: normul
       objectReference: {fileID: 0}
     - target: {fileID: 2764841989097564825, guid: 2d6936e7d2c6d4b0997ffba7205dfad7, type: 3}
       propertyPath: isTrap
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3370896390047653306, guid: 2d6936e7d2c6d4b0997ffba7205dfad7, type: 3}
       propertyPath: m_Color.b

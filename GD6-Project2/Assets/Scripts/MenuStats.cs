@@ -13,11 +13,11 @@ public class MenuStats : MonoBehaviour
         string msg;
         if (best.HasValue)
         {
-            msg = "smartest penguin's score: " + best.Value.ToString();
+            msg = "one penguin reached finish in only " + best.Value.ToString() + " steps, hehe...";
         }
         else
         {
-            msg = "smartest penguin's score: -";
+            msg = "one penguin reached finish in only - steps, hehe...";
         }
 
         if (smartestText != null) smartestText.text = msg;
